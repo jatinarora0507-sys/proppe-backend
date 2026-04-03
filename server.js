@@ -4,6 +4,7 @@ import pkg from "pg";
 import multer from "multer";
 import cloudinary from "cloudinary";
 import dotenv from "dotenv";
+import twilio from "twilio";
 
 dotenv.config();
 const { Pool } = pkg;
@@ -23,6 +24,15 @@ cloudinary.v2.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// ✅ Twilio Config
+const client = twilio(
+  process.env.TWILIO_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+
+// 👉 RM ka WhatsApp number (yahan apna number daal)
+const RM_NUMBER = "whatsapp:+91XXXXXXXXXX";
 
 // ✅ Multer setup
 const upload = multer({ dest: "uploads/" });
@@ -89,15 +99,27 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
   }
 });
 
-// ✅ LEAD SAVE (FIXED PROPERLY)
+// ✅ LEAD SAVE + WHATSAPP ALERT
 app.post("/api/leads", async (req, res) => {
   const { name, phone, propertyId } = req.body;
 
   try {
+    // 1️⃣ Save in DB
     await pool.query(
       "INSERT INTO leads (name, phone, property_id) VALUES ($1, $2, $3)",
       [name, phone, propertyId]
     );
+
+    // 2️⃣ Send WhatsApp message
+    await client.messages.create({
+      from: "whatsapp:+14155238886", // Twilio sandbox number
+      to: RM_NUMBER,
+      body: `🔥 New Lead Alert
+
+Name: ${name}
+Phone: ${phone}
+Property ID: ${propertyId}`
+    });
 
     res.json({ success: true });
   } catch (err) {
