@@ -17,7 +17,7 @@ const pool = new Pool({
   connectionString: process.env.DB_URL,
 });
 
-// ✅ Cloudinary Config (FIXED)
+// ✅ Cloudinary Config
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -27,7 +27,7 @@ cloudinary.v2.config({
 // ✅ Multer setup
 const upload = multer({ dest: "uploads/" });
 
-// ✅ Health route (important for Render)
+// ✅ Health route
 app.get("/", (req, res) => {
   res.send("Server is live 🚀");
 });
@@ -87,7 +87,10 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
     console.error(err);
     res.status(500).send("Upload failed");
   }
-});app.post("/api/leads", async (req, res) => {
+});
+
+// ✅ LEAD SAVE (FIXED PROPERLY)
+app.post("/api/leads", async (req, res) => {
   const { name, phone, propertyId } = req.body;
 
   try {
@@ -98,12 +101,12 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send("Error saving lead");
   }
 });
 
-// ✅ PORT FIX (MOST IMPORTANT)
+// ✅ PORT
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
