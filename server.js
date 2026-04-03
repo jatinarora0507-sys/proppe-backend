@@ -87,6 +87,20 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
     console.error(err);
     res.status(500).send("Upload failed");
   }
+});app.post("/api/leads", async (req, res) => {
+  const { name, phone, propertyId } = req.body;
+
+  try {
+    await pool.query(
+      "INSERT INTO leads (name, phone, property_id) VALUES ($1, $2, $3)",
+      [name, phone, propertyId]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error saving lead");
+  }
 });
 
 // ✅ PORT FIX (MOST IMPORTANT)
